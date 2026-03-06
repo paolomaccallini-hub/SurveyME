@@ -2,7 +2,7 @@
 
 ## Abstract
 
-Raw data from the EMEA Pan-European ME Patient Survey were analysed by several methods, including local outlier factor (LOF), supervised and unsupervised Machine Learning (ML). A total of 9,596 subjects were considered, including three patients added to the original data set. Age at first symptoms for males with ME/CFS significantly fits a gamma bimodal density, with about 60% of the subjects developing the disease at a mean age of 27 (sd = 13) and 40% at a mean age of 40 (sd = 8). 
+Raw data from the EMEA Pan-European ME Patient Survey were analysed by several methods, including local outlier factor (LOF), supervised and unsupervised Machine Learning (ML), and bimodal fit of age at first symptoms. A total of 9,596 subjects were considered, including three patients added to the original data set. Age at first symptoms for males with ME/CFS displays a statistically significant fit with a gamma bimodal density, with about 60% of the subjects developing the disease at a mean age of 27 (sd = 13) and 40% at a mean age of 40 (sd = 8). 
 
 ## Methods
 
