@@ -74,7 +74,7 @@ I searched for outliers among patients by using the local outlier factor (LOF) a
 
 ### Correlations
 
-Correlation tables between variables were computed using the Spearman coefficient. Only significant correlations were reported (two-sided test, cut-off for significance of 0.05). I employed the package `corplot`. P
+Correlation tables between variables were computed using the Spearman coefficient. Only significant correlations were reported (two-sided test, cut-off for significance of 0.05). I employed the package `corplot`. 
 
 ### Comparisons
 
