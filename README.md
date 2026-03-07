@@ -296,7 +296,7 @@ The performances of the logistic and Naive Bayes models in predicting the severi
   <em>Figure 6. Performances of a Naive Bayes supervised classification, with severity as exit variable. For details, see the caption of Figure 5. </em>
 </p>
 
-The significant coefficients of the logistic regression applied to all the available data are reported in Table 8. We see that the significant positive predictors of severity are fatigue, dizziness, PEM, sensitivity,  sleep problems, and the presence of relatives with the same disease. On the other hand, a course of the disease that is stable, fluctuating or improving negatively regresses with severity. Also, starting the illness after a traumatic life event predicts a less severe profile. The Area Under the Curve of this model is 0.83 (see ROC_log_severity_n.jpg in the file section).
+The significant coefficients of the logistic regression applied to all the available data are reported in Table 8. We see that the significant positive predictors of severity are fatigue, dizziness, PEM, sensitivity,  sleep problems, and the presence of relatives with the same disease. On the other hand, a course of the disease that is stable, fluctuating or improving negatively regresses with severity. Also, starting the illness after a traumatic life event predicts a less severe profile. 
 
 | Variable          | Estimate | SE         | Z       | p-value    |Sign.    |
 |:------------------|---------:|-----------:|--------:|-----------:|:--------|
@@ -318,7 +318,7 @@ The significant coefficients of the logistic regression applied to all the avail
 
 #### Supervised classification of outliers
 
-I also trained two models (logistic regression and Naive Bayes) to predict LOF. Their performances in predicting outliers (LOF>0.95th percentile) are reported in Figures 7 and 8, respectively. Naive-Bays outperforms logistic regression in this case.
+I also trained two models (logistic regression and Naive Bayes) to predict LOF. Their performances in predicting outliers (LOF>0.95th percentile) are reported in Figures 7 and 8, respectively. Naive-Bayes outperforms logistic regression in this case.
 
 <img src="https://github.com/user-attachments/assets/69a52aa7-3e4e-4578-9843-b5262ae122b7" width="800" alt="Supervised_log_Resampling_lof">
 <p align="left">
