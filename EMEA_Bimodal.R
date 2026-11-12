@@ -210,15 +210,15 @@ for (fam in family) {
   #
   # Save metadata
   #
-  file.name<-paste0("Plot/",fam,"_bimodal_fit.txt")
-  write.table(myresults,file=file.name,sep="\t",col.names=T,row.names=F,quote=F)
+  file.name<-paste0("Plot/",fam,"_bimodal_fit.csv")
+  write.table(myresults,file=file.name,sep=",",col.names=T,row.names=F,quote=F)
 }
 #
 # Write results (KS, BIC, AIC)
 # 
 write.table(criteria_results,
-            file="Plot/Bimodal_fit_criteria.txt",
-            sep="\t",
+            file="Plot/Bimodal_fit_criteria.csv",
+            sep="t",
             col.names=T,
             row.names=F,
             quote=F)
