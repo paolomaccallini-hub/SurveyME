@@ -1,0 +1,7 @@
+group	proportion	mean	SD
+Younger Females	0.18	17.66	6.74
+Older Females	0.82	36.9	11.08
+Younger Males	0.22	17.95	6.95
+Older Males	0.78	37.1	11.63
+Younger Both sexes	0.19	17.63	6.74
+Older Both sexes	0.81	36.89	11.17

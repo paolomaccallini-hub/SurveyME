@@ -1,0 +1,15 @@
+# Data files are not included in the repository. 
+EMEA.xlsx
+EMEA_edited.txt
+
+# History files
+.Rhistory
+.Rapp.history
+
+# Session Data files
+.RData
+.RDataTmp
+
+# User-specific files
+.Ruserdata
+

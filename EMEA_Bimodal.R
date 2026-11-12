@@ -36,8 +36,9 @@ xvals<-seq(0,100,1)
 #
 # Bimodal analysis
 #
-family<-c("gamma", "lnorm", "norm")
+family<-c("gamma", "lnorm", "norm", "weibull")
 fit_list<-list()
+criteria_results<-data.frame() # goodness of fit tests
 for (fam in family) {
   print(fam)
   for (j in c(1,2,3)) {
@@ -111,16 +112,86 @@ for (fam in family) {
         m*pnorm(q,mean=fit_list[[sex]]$mu[1],sd=fit_list[[sex]]$sd[1],) +
           (1-m)*pnorm(q,mean=fit_list[[sex]]$mu[2],sd=fit_list[[sex]]$sd[2])
       }
+    } else if (fam=="weibull") {
+      for (gr in c(1,2)) {
+        counter<-counter+1
+        print(counter)
+        prop<-fit_list[[sex]]$pi[gr]
+        k<-fit_list[[sex]]$k[gr]
+        lambda<-fit_list[[sex]]$lambda[gr]
+        myresults$group[counter]<-paste(age[gr],names(sexes[sex]))
+        myresults$proportion[counter]<-round(prop,2)
+        myresults$mean[counter]<-round(lambda*gamma(1+1/k),2)
+        myresults$SD[counter]<-round(lambda*sqrt(gamma(1+2/k)-gamma(1+1/k)^2),2)
+        f_list[[gr]]<-dweibull(xvals,shape=k,scale=lambda)
+      }
+      m<-fit_list[[sex]]$pi[1]
+      CDF_func<-function(q) {
+        m*pweibull(q,shape=fit_list[[sex]]$k[1],scale=fit_list[[sex]]$lambda[1]) +
+          (1-m)*pweibull(q,shape=fit_list[[sex]]$k[2],scale=fit_list[[sex]]$lambda[2])
+      }
     }
+    #
+    # Log-likelihood, AIC and BIC
+    #
+    fit<-fit_list[[sex]]
+    #
+    density_func<-switch(fam,
+                         
+                         gamma = function(x) {
+                           fit$pi[1]*dgamma(x,shape=fit$alpha[1],rate=fit$lambda[1]) +
+                             fit$pi[2]*dgamma(x,shape=fit$alpha[2],rate=fit$lambda[2])
+                         },
+                         
+                         lnorm = function(x) {
+                           fit$pi[1]*dlnorm(x,meanlog=fit$mulog[1],sdlog=fit$sdlog[1]) +
+                             fit$pi[2]*dlnorm(x,meanlog=fit$mulog[2],sdlog=fit$sdlog[2])
+                         },
+                         
+                         norm = function(x) {
+                           fit$pi[1]*dnorm(x,mean=fit$mu[1],sd=fit$sd[1]) +
+                             fit$pi[2]*dnorm(x,mean=fit$mu[2],sd=fit$sd[2])
+                         },
+                         
+                         weibull = function(x) {
+                           fit$pi[1]*dweibull(x,shape=fit$k[1],scale=fit$lambda[1]) +
+                             fit$pi[2]*dweibull(x,shape=fit$k[2],scale=fit$lambda[2])
+                         }
+    )
+    
+    loglik<-sum(log(pmax(density_func(Dist_list[[sex]]),
+                         .Machine$double.xmin)))
+    
+    n<-length(Dist_list[[sex]])
+    npar<-5
+    
+    AIC_value<-2*npar-2*loglik
+    BIC_value<-npar*log(n)-2*loglik
     #
     # Kolmogorov test
     #
     a<-ks.test(Dist_list[[sex]],CDF_func) # KS test
     pval<-format(a$p.value,digits=3)
     #
+    # Store results for goodness of fit
+    #
+    criteria_results<-rbind(criteria_results,
+                            data.frame(
+                              family=fam,
+                              group=names(sexes)[sex],
+                              n=n,
+                              logLik=loglik,
+                              parameters=npar,
+                              AIC=AIC_value,
+                              BIC=BIC_value,
+                              KS_D=unname(a$statistic),
+                              KS_p=a$p.value
+                            )
+    )
+    #
     # plots
     #
-    hist(Dist_list[[sex]],freq=F,xlim=c(5,90),ylim=c(0,0.04),xlab="age at onset",
+    hist(Dist_list[[sex]],breaks=seq(0,100,2),freq=F,xlim=c(5,90),ylim=c(0,0.04),xlab="age at onset",
          ylab="density of probability",main=paste0(names(sexes[sex])," (KS pval=",pval,")"),
          col=colv[sex])
     #
@@ -142,3 +213,12 @@ for (fam in family) {
   file.name<-paste0("Plot/",fam,"_bimodal_fit.txt")
   write.table(myresults,file=file.name,sep="\t",col.names=T,row.names=F,quote=F)
 }
+#
+# Write results (KS, BIC, AIC)
+# 
+write.table(criteria_results,
+            file="Plot/Bimodal_fit_criteria.txt",
+            sep="\t",
+            col.names=T,
+            row.names=F,
+            quote=F)
