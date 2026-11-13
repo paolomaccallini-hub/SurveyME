@@ -4,6 +4,7 @@
 # Detection in bimodality of distributions of age at onset, stratified by sex
 #-------------------------------------------------------------------------------
 #
+set.seed(12) # seed
 current_dir<-getwd()
 folder_path<-file.path(current_dir,"Plot")  
 if(!dir.exists(folder_path)) {
@@ -34,6 +35,10 @@ age_labels<-list(c("Single"),c("Younger","Older"),c("Younger","Middle","Older"))
 colv<-c("pink","cyan","gray")
 xvals<-seq(0,100,1)
 criteria_results<-data.frame() # goodness of fit tests
+log_file<-"Plot/Bimodal_fit.log" # start a log that will recor the parameters of the various models
+cat("Mixture fits of age at onset (parameters on the age+1 scale)\n",file=log_file)
+par_names<-list(gamma=c("alpha","lambda"),lnorm=c("mulog","sdlog"),
+                norm=c("mu","sd"),weibull=c("k","lambda"))
 #
 # Bimodal analysis
 #
@@ -251,10 +256,34 @@ for (comp in components) {
       AIC_value<-2*npar-2*loglik
       BIC_value<-npar*log(n)-2*loglik
       #
-      # Kolmogorov test
+      # Log fitted parameters
       #
-      a<-ks.test(Dist_list[[sex]],CDF_func) # KS test
-      pval<-format(a$p.value,digits=3)
+      cat(paste0("\n",fam," | ",comp," comp | ",names(sexes)[sex]," | n=",n,
+                 " | logLik=",round(loglik,2)," | BIC=",round(BIC_value,2),"\n"),
+          file=log_file,append=TRUE)
+      for (gr in seq(1,comp)) {
+        p1<-par_names[[fam]][1]
+        p2<-par_names[[fam]][2]
+        cat(paste0("  comp ",gr,": pi=",signif(fit$pi[gr],4),
+                   "  ",p1,"=",signif(fit[[p1]][gr],4),
+                   "  ",p2,"=",signif(fit[[p2]][gr],4),"\n"),
+            file=log_file,append=TRUE)
+      }
+      #
+      # Kolmogorov test with jittering (to make the discrete density a continous one)
+      #
+      R<-100
+      D_rep<-rep(NA,R)
+      p_rep<-rep(NA,R)
+      for (r in 1:R) {
+        yj<-Dist_list[[sex]]+runif(n,0,1)
+        kt<-ks.test(yj,CDF_func)
+        D_rep[r]<-unname(kt$statistic)
+        p_rep[r]<-kt$p.value
+      }
+      KS_D<-median(D_rep)
+      KS_p<-median(p_rep)
+      pval<-format(KS_p,digits=3)
       #
       # Store quantiles for QQ plots
       #
@@ -266,7 +295,7 @@ for (comp in components) {
       # Store results for goodness of fit
       #
       df<-data.frame(family=fam,group=names(sexes)[sex],n=n,logLik=loglik,components=comp,
-                     parameters=npar,AIC=AIC_value,BIC=BIC_value,KS_D=unname(a$statistic),
+                     parameters=npar,AIC=AIC_value,BIC=BIC_value,KS_D=unname(KS_D),
                      KS_p=a$p.value)
       criteria_results<-rbind(criteria_results,df)
       #
@@ -328,42 +357,39 @@ criteria_results$LOGP_KS<-(-log10(criteria_results$KS_p))
 #
 # Plot BIC, KS_D and LOGP_10, one plot per dataset
 #
-for (comp in components) {
-  for (sex in c(1,2,3)) {
-    df<-criteria_results # copy criteria
-    df<-subset.data.frame(df,group==names(sexes[sex]))
-    df<-subset.data.frame(df,components==comp)
-    Massimo<-max(df$LOGP_KS)
-    for (mycol in c("AIC","BIC","KS_D")) { # scale in LOGP_KS scale
-      maximus<-max(df[[mycol]])
-      minimum<-min(df[[mycol]])
-      df[[mycol]]<-Massimo*(df[[mycol]]-minimum)/(maximus-minimum)
-    }
-    models<-c()
-    for (r in 1:nrow(df)) models[r]<-paste(df$family[r],"-",df$group[r])
-    #
-    file.name<-paste0("Plot/Goodness_of_fit_",names(sexes[sex]),"_",comp,".jpeg")
-    jpeg(file.name,quality=100,res=300,width=1500,height=2000)
-    par(mar=c(11,4,4,2))
-    barplot(df$LOGP_KS~seq(1,length(models)),width=1,space=0.2,ylim=c(0,1.3*Massimo),
-            xlab="",ylab="",axes=F,xaxt="n",col="gray")
-    abline(h=-log10(0.05),col="red",lwd=2,lty=2)
-    par(new=T)
-    plot(seq(1,length(models)),df$BIC,pch=20,type="b",col="black",lty=1,lwd=2,xlab="",
-         ylab="",xlim=c(0.5,length(models)+0.5),ylim=c(0,1.3*Massimo),axes=FALSE)
-    par(new=T)
-    plot(seq(1,length(models)),df$KS_D,pch=17,type="b",col="blue",lty=1,lwd=2,xlab="",
-         ylab="",xlim=c(0.5,length(models)+0.5),ylim=c(0,1.3*Massimo),axes=FALSE)
-    text(seq(1,length(models)),-0.1*Massimo,labels=models,srt=45,adj=1,xpd=TRUE,cex=0.8)
-    axis(2)
-    #
-    # Legend
-    #
-    legend("topright",legend=c("BIC","KS_D","LOGP_KS"),col=c("black","blue","gray"),pch=c(20,17,15),
-           lty=c(1,2,NA),lwd=2,bty="n")
-    dev.off()  
-  }  
-}
+for (sex in c(1,2,3)) {
+  df<-criteria_results # copy criteria
+  df<-subset.data.frame(df,group==names(sexes[sex]))
+  Massimo<-max(df$LOGP_KS)
+  for (mycol in c("AIC","BIC","KS_D")) { # scale in LOGP_KS scale
+    maximus<-max(df[[mycol]])
+    minimum<-min(df[[mycol]])
+    df[[mycol]]<-Massimo*(df[[mycol]]-minimum)/(maximus-minimum)
+  }
+  models<-c()
+  for (r in 1:nrow(df)) models[r]<-paste(df$family[r],"-",df$group[r],"-",df$components[r])
+  #
+  file.name<-paste0("Plot/Goodness_of_fit_",names(sexes[sex]),".jpeg")
+  jpeg(file.name,quality=100,res=300,width=1500,height=2000)
+  par(mar=c(11,4,4,2))
+  barplot(df$LOGP_KS~seq(1,length(models)),width=1,space=0.2,ylim=c(0,1.3*Massimo),
+          xlab="",ylab="",axes=F,xaxt="n",col="gray")
+  abline(h=-log10(0.05),col="red",lwd=2,lty=2)
+  par(new=T)
+  plot(seq(1,length(models)),df$BIC,pch=20,type="b",col="black",lty=1,lwd=2,xlab="",
+       ylab="",xlim=c(0.5,length(models)+0.5),ylim=c(0,1.3*Massimo),axes=FALSE)
+  par(new=T)
+  plot(seq(1,length(models)),df$KS_D,pch=17,type="b",col="blue",lty=1,lwd=2,xlab="",
+       ylab="",xlim=c(0.5,length(models)+0.5),ylim=c(0,1.3*Massimo),axes=FALSE)
+  text(seq(1,length(models)),-0.1*Massimo,labels=models,srt=45,adj=1,xpd=TRUE,cex=0.8)
+  axis(2)
+  #
+  # Legend
+  #
+  legend("topright",legend=c("BIC","KS_D","LOGP_KS"),col=c("black","blue","gray"),pch=c(20,17,15),
+         lty=c(1,2,NA),lwd=2,bty="n")
+  dev.off()  
+}  
 #
 # Write results (KS, BIC, AIC)
 # 
