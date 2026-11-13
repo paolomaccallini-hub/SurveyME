@@ -33,12 +33,12 @@ sexes<-c("Females"=1,"Males"=2,"Both sexes"=3)
 age<-c("Younger","Older")
 colv<-c("pink","cyan","gray")
 xvals<-seq(0,100,1)
+criteria_results<-data.frame() # goodness of fit tests
 #
-# Bimodal analysis
+# Multimodal analysis
 #
 family<-c("gamma", "lnorm", "norm", "weibull")
 fit_list<-list()
-criteria_results<-data.frame() # goodness of fit tests
 for (fam in family) {
   print(fam)
   for (j in c(1,2,3)) {
@@ -46,7 +46,7 @@ for (fam in family) {
     fit_list[[j]]<-mixfit(Dist_list[[j]],family=fam,ncomp=2)
   }
   #
-  # Plotting
+  # Plotting empirical distributions and models
   #
   file.name<-paste0("Plot/Age_at_onset_",fam,"_Bimodality.jpeg")
   jpeg(file.name,quality=100,res=300,width=2000,height=2000)
@@ -208,17 +208,101 @@ for (fam in family) {
   }
   dev.off()
   #
-  # Save metadata
+  # Plotting QQplots: empirical distributions against models
   #
-  file.name<-paste0("Plot/",fam,"_bimodal_fit.csv")
-  write.table(myresults,file=file.name,sep=",",col.names=T,row.names=F,quote=F)
+  file.name<-paste0("Plot/Age_at_onset_",fam,"_QQ.jpeg")
+  jpeg(file.name,quality=100,res=300,width=3000,height=1000)
+  lay.mat<-matrix(c(1,2,3),1,3)
+  layout(mat=lay.mat)
+  #
+  myresults<-data.frame(group=rep(NA,6))
+  counter<-0
+  for (sex in c(1,2,3)) {
+    #
+    f_list<-list()
+    if (fam=="lnorm") {
+      for (gr in c(1,2)) {
+        counter<-counter+1
+        prop<-fit_list[[sex]]$pi[gr]
+        m<-fit_list[[sex]]$mulog[gr]
+        s<-fit_list[[sex]]$sdlog[gr]
+        f_list[[gr]]<-dlnorm(xvals,meanlog=m,sdlog=s)
+      }
+      m<-fit_list[[sex]]$pi[1]
+      CDF_func<-function(q) {
+        m*plnorm(q,meanlog=fit_list[[sex]]$mulog[1],sdlog=fit_list[[sex]]$sdlog[1]) +
+          (1-m)*plnorm(q,meanlog=fit_list[[sex]]$mulog[2],sdlog=fit_list[[sex]]$sdlog[2])
+      }
+    } else if (fam=="gamma") {
+      for (gr in c(1,2)) {
+        counter<-counter+1
+        prop<-fit_list[[sex]]$pi[gr]
+        a<-fit_list[[sex]]$alpha[gr]
+        l<-fit_list[[sex]]$lambda[gr]
+        f_list[[gr]]<-dgamma(xvals,shape=a,rate=l)
+      }
+      m<-fit_list[[sex]]$pi[1]
+      CDF_func<-function(q) {
+        m*pgamma(q,shape=fit_list[[sex]]$alpha[1],rate=fit_list[[sex]]$lambda[1]) +
+          (1-m)*pgamma(q,shape=fit_list[[sex]]$alpha[2],rate=fit_list[[sex]]$lambda[2])
+      }
+    } else if (fam=="norm") {
+      for (gr in c(1,2)) {
+        counter<-counter+1
+        prop<-fit_list[[sex]]$pi[gr]
+        mu<-fit_list[[sex]]$mu[gr]
+        sd<-fit_list[[sex]]$sd[gr]
+        f_list[[gr]]<-dnorm(xvals,mean=mu,sd=sd) 
+      }
+      m<-fit_list[[sex]]$pi[1]
+      CDF_func<-function(q) {
+        m*pnorm(q,mean=fit_list[[sex]]$mu[1],sd=fit_list[[sex]]$sd[1],) +
+          (1-m)*pnorm(q,mean=fit_list[[sex]]$mu[2],sd=fit_list[[sex]]$sd[2])
+      }
+    } else if (fam=="weibull") {
+      for (gr in c(1,2)) {
+        counter<-counter+1
+        prop<-fit_list[[sex]]$pi[gr]
+        k<-fit_list[[sex]]$k[gr]
+        lambda<-fit_list[[sex]]$lambda[gr]
+        f_list[[gr]]<-dweibull(xvals,shape=k,scale=lambda)
+      }
+      m<-fit_list[[sex]]$pi[1]
+      CDF_func<-function(q) {
+        m*pweibull(q,shape=fit_list[[sex]]$k[1],scale=fit_list[[sex]]$lambda[1]) +
+          (1-m)*pweibull(q,shape=fit_list[[sex]]$k[2],scale=fit_list[[sex]]$lambda[2])
+      }
+    }
+    #
+    # plots
+    #
+    y<-Dist_list[[sex]]   # empirical distribution
+    p<-ppoints(length(y)) # probabilities for the quantiles 
+    x<-rep(NA,length(p))  # theoretical quantiles go here
+    age<-seq(0,150,0.1)
+    temp<-CDF_func(age)
+    for (pi in c(1:length(y))) {
+      x[pi]<-age[which.min(abs(temp-p[pi]))] # find the age corresponding to CDF=p[pi]
+    }
+    #
+    # retrieve BIC
+    #
+    df<-subset.data.frame(criteria_results,family==fam)
+    df<-subset.data.frame(df,group==sexes[sex])
+    BIC<-df$BIC
+    qqplot(x,y,xlab=paste0("theoretical quantiles (",fam,")"),
+           ylab=paste0("empirical quantiles"),
+           main=paste0(names(sexes[sex])," (BIC=",BIC,")"))
+    abline(0,1,col="red",lty=3)
+  }
+  dev.off()
 }
 #
 # Write results (KS, BIC, AIC)
 # 
 write.table(criteria_results,
             file="Plot/Bimodal_fit_criteria.csv",
-            sep="t",
+            sep=",",
             col.names=T,
             row.names=F,
             quote=F)
