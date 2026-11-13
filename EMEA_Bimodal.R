@@ -35,7 +35,7 @@ colv<-c("pink","cyan","gray")
 xvals<-seq(0,100,1)
 criteria_results<-data.frame() # goodness of fit tests
 #
-# Multimodal analysis
+# Bimodal analysis
 #
 family<-c("gamma", "lnorm", "norm", "weibull")
 fit_list<-list()
@@ -76,6 +76,10 @@ for (fam in family) {
         m*plnorm(q,meanlog=fit_list[[sex]]$mulog[1],sdlog=fit_list[[sex]]$sdlog[1]) +
           (1-m)*plnorm(q,meanlog=fit_list[[sex]]$mulog[2],sdlog=fit_list[[sex]]$sdlog[2])
       }
+      density_func<-function(q) {
+        m*dlnorm(q,meanlog=fit_list[[sex]]$mulog[1],sdlog=fit_list[[sex]]$sdlog[1]) +
+          (1-m)*dlnorm(q,meanlog=fit_list[[sex]]$mulog[2],sdlog=fit_list[[sex]]$sdlog[2])
+      }
     } else if (fam=="gamma") {
       for (gr in c(1,2)) {
         counter<-counter+1
@@ -94,6 +98,10 @@ for (fam in family) {
         m*pgamma(q,shape=fit_list[[sex]]$alpha[1],rate=fit_list[[sex]]$lambda[1]) +
           (1-m)*pgamma(q,shape=fit_list[[sex]]$alpha[2],rate=fit_list[[sex]]$lambda[2])
       }
+      density_func<-function(q) {
+        m*dgamma(q,shape=fit_list[[sex]]$alpha[1],rate=fit_list[[sex]]$lambda[1]) +
+          (1-m)*dgamma(q,shape=fit_list[[sex]]$alpha[2],rate=fit_list[[sex]]$lambda[2])
+      }
     } else if (fam=="norm") {
       for (gr in c(1,2)) {
         counter<-counter+1
@@ -109,8 +117,12 @@ for (fam in family) {
       }
       m<-fit_list[[sex]]$pi[1]
       CDF_func<-function(q) {
-        m*pnorm(q,mean=fit_list[[sex]]$mu[1],sd=fit_list[[sex]]$sd[1],) +
+        m*pnorm(q,mean=fit_list[[sex]]$mu[1],sd=fit_list[[sex]]$sd[1]) +
           (1-m)*pnorm(q,mean=fit_list[[sex]]$mu[2],sd=fit_list[[sex]]$sd[2])
+      }
+      density_func<-function(q) {
+        m*dnorm(q,mean=fit_list[[sex]]$mu[1],sd=fit_list[[sex]]$sd[1],) +
+          (1-m)*dnorm(q,mean=fit_list[[sex]]$mu[2],sd=fit_list[[sex]]$sd[2])
       }
     } else if (fam=="weibull") {
       for (gr in c(1,2)) {
@@ -130,41 +142,19 @@ for (fam in family) {
         m*pweibull(q,shape=fit_list[[sex]]$k[1],scale=fit_list[[sex]]$lambda[1]) +
           (1-m)*pweibull(q,shape=fit_list[[sex]]$k[2],scale=fit_list[[sex]]$lambda[2])
       }
+      density_func<-function(q) {
+        m*dweibull(q,shape=fit_list[[sex]]$k[1],scale=fit_list[[sex]]$lambda[1]) +
+          (1-m)*dweibull(q,shape=fit_list[[sex]]$k[2],scale=fit_list[[sex]]$lambda[2])
+      }
     }
     #
     # Log-likelihood, AIC and BIC
     #
     fit<-fit_list[[sex]]
     #
-    density_func<-switch(fam,
-                         
-                         gamma = function(x) {
-                           fit$pi[1]*dgamma(x,shape=fit$alpha[1],rate=fit$lambda[1]) +
-                             fit$pi[2]*dgamma(x,shape=fit$alpha[2],rate=fit$lambda[2])
-                         },
-                         
-                         lnorm = function(x) {
-                           fit$pi[1]*dlnorm(x,meanlog=fit$mulog[1],sdlog=fit$sdlog[1]) +
-                             fit$pi[2]*dlnorm(x,meanlog=fit$mulog[2],sdlog=fit$sdlog[2])
-                         },
-                         
-                         norm = function(x) {
-                           fit$pi[1]*dnorm(x,mean=fit$mu[1],sd=fit$sd[1]) +
-                             fit$pi[2]*dnorm(x,mean=fit$mu[2],sd=fit$sd[2])
-                         },
-                         
-                         weibull = function(x) {
-                           fit$pi[1]*dweibull(x,shape=fit$k[1],scale=fit$lambda[1]) +
-                             fit$pi[2]*dweibull(x,shape=fit$k[2],scale=fit$lambda[2])
-                         }
-    )
-    
-    loglik<-sum(log(pmax(density_func(Dist_list[[sex]]),
-                         .Machine$double.xmin)))
-    
+    loglik<-sum(log(pmax(density_func(Dist_list[[sex]]),.Machine$double.xmin)))
     n<-length(Dist_list[[sex]])
     npar<-5
-    
     AIC_value<-2*npar-2*loglik
     BIC_value<-npar*log(n)-2*loglik
     #
@@ -175,19 +165,9 @@ for (fam in family) {
     #
     # Store results for goodness of fit
     #
-    criteria_results<-rbind(criteria_results,
-                            data.frame(
-                              family=fam,
-                              group=names(sexes)[sex],
-                              n=n,
-                              logLik=loglik,
-                              parameters=npar,
-                              AIC=AIC_value,
-                              BIC=BIC_value,
-                              KS_D=unname(a$statistic),
-                              KS_p=a$p.value
-                            )
-    )
+    df<-data.frame(family=fam,group=names(sexes)[sex],n=n,logLik=loglik,parameters=npar,
+      AIC=AIC_value,BIC=BIC_value,KS_D=unname(a$statistic),KS_p=a$p.value)
+    criteria_results<-rbind(criteria_results,df)
     #
     # plots
     #
@@ -256,7 +236,7 @@ for (fam in family) {
       }
       m<-fit_list[[sex]]$pi[1]
       CDF_func<-function(q) {
-        m*pnorm(q,mean=fit_list[[sex]]$mu[1],sd=fit_list[[sex]]$sd[1],) +
+        m*pnorm(q,mean=fit_list[[sex]]$mu[1],sd=fit_list[[sex]]$sd[1]) +
           (1-m)*pnorm(q,mean=fit_list[[sex]]$mu[2],sd=fit_list[[sex]]$sd[2])
       }
     } else if (fam=="weibull") {
@@ -288,8 +268,8 @@ for (fam in family) {
     # retrieve BIC
     #
     df<-subset.data.frame(criteria_results,family==fam)
-    df<-subset.data.frame(df,group==sexes[sex])
-    BIC<-df$BIC
+    df<-subset.data.frame(df,group==names(sexes[sex]))
+    BIC<-round(df$BIC,2)
     qqplot(x,y,xlab=paste0("theoretical quantiles (",fam,")"),
            ylab=paste0("empirical quantiles"),
            main=paste0(names(sexes[sex])," (BIC=",BIC,")"))
@@ -298,11 +278,44 @@ for (fam in family) {
   dev.off()
 }
 #
+# Add -LOG(KS_p)
+#
+criteria_results$LOGP_KS<-(-log10(criteria_results$KS_p))
+#
+# Plot BIC values ranked from highest (worst) to lowest (best)
+#
+df<-criteria_results # copy criteria
+Massimo<-max(df$LOGP_KS)
+for (mycol in c("AIC","BIC","KS_D")) { # scale in LOGP_KS scale
+  maximus<-max(df[[mycol]])
+  df[[mycol]]<-Massimo*df[[mycol]]/maximus
+}
+df<-df[order(df$BIC,decreasing=T),] # rank by BIC (from worst to best)
+models<-c()
+for (r in 1:nrow(df)) models[r]<-paste(df$family[r],"-",df$group[r])
+#
+file.name<-paste0("Plot/Goodness_of_fit.jpeg")
+jpeg(file.name,quality=100,res=300,width=2000,height=2000)
+par(mar=c(11,4,4,2))
+barplot(df$LOGP_KS~seq(1,length(models)),width=1,space=0.2,ylim=c(0,Massimo),
+        xlab="",ylab="",axes=F,xaxt="n",col="gray")
+abline(h=-log10(0.05),col="red",lwd=2,lty=2)
+par(new=T)
+plot(seq(1,length(models)),df$BIC,pch=20,type="b",col="black",lty=1,lwd=2,xlab="",
+     ylab="",xlim=c(0.5,length(models)+0.5),ylim=c(0,Massimo),axes=FALSE)
+par(new=T)
+plot(seq(1,length(models)),df$KS_D,pch=17,type="b",col="blue",lty=1,lwd=2,xlab="",
+     ylab="",xlim=c(0.5,length(models)+0.5),ylim=c(0,Massimo),axes=FALSE)
+text(seq(1,length(models)),-0.05*Massimo,labels=models,srt=45,adj=1,xpd=TRUE,cex=0.8)
+axis(2)
+#
+# Legend
+#
+legend("topright",legend=c("BIC","KS_D","LOGP_KS"),col=c("black","blue","gray"),pch=c(20,17,15),
+       lty=c(1,2,NA),lwd=2,bty="n")
+dev.off()
+#
 # Write results (KS, BIC, AIC)
 # 
-write.table(criteria_results,
-            file="Plot/Bimodal_fit_criteria.csv",
-            sep=",",
-            col.names=T,
-            row.names=F,
-            quote=F)
+write.table(criteria_results,file="Plot/Bimodal_fit_criteria.csv",sep=",",
+            col.names=T,row.names=F,quote=F)
