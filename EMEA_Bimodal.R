@@ -43,7 +43,7 @@ for (fam in family) {
   print(fam)
   for (j in c(1,2,3)) {
     print(names(sexes)[j])
-    fit_list[[j]]<-mixfit(Dist_list[[j]],family=fam,ncomp=2)
+    fit_list[[j]]<-mixfit(Dist_list[[j]],family=fam,ncomp=3)
   }
   #
   # Plotting empirical distributions and models
@@ -121,7 +121,7 @@ for (fam in family) {
           (1-m)*pnorm(q,mean=fit_list[[sex]]$mu[2],sd=fit_list[[sex]]$sd[2])
       }
       density_func<-function(q) {
-        m*dnorm(q,mean=fit_list[[sex]]$mu[1],sd=fit_list[[sex]]$sd[1],) +
+        m*dnorm(q,mean=fit_list[[sex]]$mu[1],sd=fit_list[[sex]]$sd[1]) +
           (1-m)*dnorm(q,mean=fit_list[[sex]]$mu[2],sd=fit_list[[sex]]$sd[2])
       }
     } else if (fam=="weibull") {
@@ -282,38 +282,41 @@ for (fam in family) {
 #
 criteria_results$LOGP_KS<-(-log10(criteria_results$KS_p))
 #
-# Plot BIC values ranked from highest (worst) to lowest (best)
+# Plot BIC, KS_D and LOGP_10, one plot per dataset
 #
-df<-criteria_results # copy criteria
-Massimo<-max(df$LOGP_KS)
-for (mycol in c("AIC","BIC","KS_D")) { # scale in LOGP_KS scale
-  maximus<-max(df[[mycol]])
-  df[[mycol]]<-Massimo*df[[mycol]]/maximus
+for (sex in c(1,2,3)) {
+  df<-criteria_results # copy criteria
+  df<-subset.data.frame(df,group==names(sexes[sex]))
+  Massimo<-max(df$LOGP_KS)
+  for (mycol in c("AIC","BIC","KS_D")) { # scale in LOGP_KS scale
+    maximus<-max(df[[mycol]])
+    minimum<-min(df[[mycol]])
+    df[[mycol]]<-Massimo*(df[[mycol]]-minimum)/(maximus-minimum)
+  }
+  models<-c()
+  for (r in 1:nrow(df)) models[r]<-paste(df$family[r],"-",df$group[r])
+  #
+  file.name<-paste0("Plot/Goodness_of_fit_",names(sexes[sex]),".jpeg")
+  jpeg(file.name,quality=100,res=300,width=1500,height=2000)
+  par(mar=c(11,4,4,2))
+  barplot(df$LOGP_KS~seq(1,length(models)),width=1,space=0.2,ylim=c(0,1.3*Massimo),
+          xlab="",ylab="",axes=F,xaxt="n",col="gray")
+  abline(h=-log10(0.05),col="red",lwd=2,lty=2)
+  par(new=T)
+  plot(seq(1,length(models)),df$BIC,pch=20,type="b",col="black",lty=1,lwd=2,xlab="",
+       ylab="",xlim=c(0.5,length(models)+0.5),ylim=c(0,1.3*Massimo),axes=FALSE)
+  par(new=T)
+  plot(seq(1,length(models)),df$KS_D,pch=17,type="b",col="blue",lty=1,lwd=2,xlab="",
+       ylab="",xlim=c(0.5,length(models)+0.5),ylim=c(0,1.3*Massimo),axes=FALSE)
+  text(seq(1,length(models)),-0.1*Massimo,labels=models,srt=45,adj=1,xpd=TRUE,cex=0.8)
+  axis(2)
+  #
+  # Legend
+  #
+  legend("topright",legend=c("BIC","KS_D","LOGP_KS"),col=c("black","blue","gray"),pch=c(20,17,15),
+         lty=c(1,2,NA),lwd=2,bty="n")
+  dev.off()  
 }
-df<-df[order(df$BIC,decreasing=T),] # rank by BIC (from worst to best)
-models<-c()
-for (r in 1:nrow(df)) models[r]<-paste(df$family[r],"-",df$group[r])
-#
-file.name<-paste0("Plot/Goodness_of_fit.jpeg")
-jpeg(file.name,quality=100,res=300,width=2000,height=2000)
-par(mar=c(11,4,4,2))
-barplot(df$LOGP_KS~seq(1,length(models)),width=1,space=0.2,ylim=c(0,Massimo),
-        xlab="",ylab="",axes=F,xaxt="n",col="gray")
-abline(h=-log10(0.05),col="red",lwd=2,lty=2)
-par(new=T)
-plot(seq(1,length(models)),df$BIC,pch=20,type="b",col="black",lty=1,lwd=2,xlab="",
-     ylab="",xlim=c(0.5,length(models)+0.5),ylim=c(0,Massimo),axes=FALSE)
-par(new=T)
-plot(seq(1,length(models)),df$KS_D,pch=17,type="b",col="blue",lty=1,lwd=2,xlab="",
-     ylab="",xlim=c(0.5,length(models)+0.5),ylim=c(0,Massimo),axes=FALSE)
-text(seq(1,length(models)),-0.05*Massimo,labels=models,srt=45,adj=1,xpd=TRUE,cex=0.8)
-axis(2)
-#
-# Legend
-#
-legend("topright",legend=c("BIC","KS_D","LOGP_KS"),col=c("black","blue","gray"),pch=c(20,17,15),
-       lty=c(1,2,NA),lwd=2,bty="n")
-dev.off()
 #
 # Write results (KS, BIC, AIC)
 # 
