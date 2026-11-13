@@ -24,8 +24,8 @@ summary(Dist_F)
 Dist_M<-mydata.M$age_ill
 summary(Dist_M)
 #
-Dist_F<-Dist_F+1 # avoid zeros
-Dist_M<-Dist_M+1 # avoid zeros
+Dist_F<-Dist_F+0.5 # avoid zeros and center the reported year
+Dist_M<-Dist_M+0.5 # avoid zeros and center the reported year
 Dist_MF<-c(Dist_F,Dist_M)
 summary(Dist_MF)
 #
@@ -36,7 +36,7 @@ colv<-c("pink","cyan","gray")
 xvals<-seq(0,100,1)
 criteria_results<-data.frame() # goodness of fit tests
 log_file<-"Plot/Bimodal_fit.log" # start a log that will recor the parameters of the various models
-cat("Mixture fits of age at onset (parameters on the age+1 scale)\n",file=log_file)
+cat("Mixture fits of age at onset (parameters on the age+0.5 scale)\n",file=log_file)
 par_names<-list(gamma=c("alpha","lambda"),lnorm=c("mulog","sdlog"),
                 norm=c("mu","sd"),weibull=c("k","lambda"))
 #
@@ -165,8 +165,8 @@ for (comp in components) {
           sd<-fit_list[[sex]]$sd[gr]
           myresults$group[counter]<-paste(age[gr],names(sexes[sex]))
           myresults$proportion[counter]<-round(prop,2)
-          myresults$mean[counter]<-mu 
-          myresults$SD[counter]<-sd
+          myresults$mean[counter]<-round(mu,2)
+          myresults$SD[counter]<-round(sd,2)
           f_list[[gr]]<-dnorm(xvals,mean=mu,sd=sd) 
         }
         prop<-fit_list[[sex]]$pi
@@ -276,7 +276,7 @@ for (comp in components) {
       D_rep<-rep(NA,R)
       p_rep<-rep(NA,R)
       for (r in 1:R) {
-        yj<-Dist_list[[sex]]+runif(n,0,1)
+        yj<-Dist_list[[sex]]+runif(n,-0.5,0.5)
         kt<-ks.test(yj,CDF_func)
         D_rep[r]<-unname(kt$statistic)
         p_rep[r]<-kt$p.value
@@ -296,13 +296,13 @@ for (comp in components) {
       #
       df<-data.frame(family=fam,group=names(sexes)[sex],n=n,logLik=loglik,components=comp,
                      parameters=npar,AIC=AIC_value,BIC=BIC_value,KS_D=unname(KS_D),
-                     KS_p=a$p.value)
+                     KS_p=KS_p)
       criteria_results<-rbind(criteria_results,df)
       #
       # plots
       #
       hist(Dist_list[[sex]],breaks=seq(0,100,2),freq=F,xlim=c(5,90),ylim=c(0,0.04),xlab="age at onset",
-           ylab="density of probability",main=paste0(names(sexes[sex])," (KS pval=",pval,")"),
+           ylab="density of probability",main=paste0(fam," - ",names(sexes[sex])," (KS pval=",pval,")"),
            col=colv[sex])
       #
       for (gr in seq(1,comp)) {
@@ -344,11 +344,33 @@ for (comp in components) {
       BIC<-round(df$BIC,2)
       qqplot(x,y,xlab=paste0("theoretical quantiles (",fam,")"),
              ylab=paste0("empirical quantiles"),
-             main=paste0(names(sexes[sex])," (BIC=",BIC,")"))
+             main=paste0(fam," - ",names(sexes[sex])," (BIC=",BIC,")"))
       abline(0,1,col="red",lty=3)
     }
     dev.off()
   }
+  #
+  # Combine the per-family figures into one figure per number of components
+  #
+  # distributions: 2x2 grid (gamma, lnorm / norm, weibull)
+  #
+  files<-paste0("Plot/Age_at_onset_",family,"_",comp,".jpeg")
+  imgs<-image_read(files)
+  row1<-image_append(imgs[1:2])
+  row2<-image_append(imgs[3:4])
+  combined<-image_append(c(row1,row2),stack=TRUE)
+  image_write(combined,path=paste0("Plot/Age_at_onset_",comp,"_components.jpeg"),
+              format="jpeg",quality=100)
+  file.remove(files)
+  #
+  # QQ plots: stacked vertically, one row per family
+  #
+  files<-paste0("Plot/Age_at_onset_",family,"_",comp,"_QQ.jpeg")
+  imgs<-image_read(files)
+  combined<-image_append(imgs,stack=TRUE)
+  image_write(combined,path=paste0("Plot/Age_at_onset_",comp,"_components_QQ.jpeg"),
+              format="jpeg",quality=100)
+  file.remove(files)
 }
 #
 # Add -LOG(KS_p)
@@ -357,6 +379,9 @@ criteria_results$LOGP_KS<-(-log10(criteria_results$KS_p))
 #
 # Plot BIC, KS_D and LOGP_10, one plot per dataset
 #
+file.name<-paste0("Plot/Goodness_of_fit.jpeg")
+jpeg(file.name,quality=100,res=300,width=3000,height=1000)
+par(mfrow=c(1,3))
 for (sex in c(1,2,3)) {
   df<-criteria_results # copy criteria
   df<-subset.data.frame(df,group==names(sexes[sex]))
@@ -369,9 +394,7 @@ for (sex in c(1,2,3)) {
   models<-c()
   for (r in 1:nrow(df)) models[r]<-paste(df$family[r],"-",df$group[r],"-",df$components[r])
   #
-  file.name<-paste0("Plot/Goodness_of_fit_",names(sexes[sex]),".jpeg")
-  jpeg(file.name,quality=100,res=300,width=1500,height=2000)
-  par(mar=c(11,4,4,2))
+  par(mar=c(8,4,4,2))
   barplot(df$LOGP_KS~seq(1,length(models)),width=1,space=0.2,ylim=c(0,1.3*Massimo),
           xlab="",ylab="",axes=F,xaxt="n",col="gray")
   abline(h=-log10(0.05),col="red",lwd=2,lty=2)
@@ -383,13 +406,14 @@ for (sex in c(1,2,3)) {
        ylab="",xlim=c(0.5,length(models)+0.5),ylim=c(0,1.3*Massimo),axes=FALSE)
   text(seq(1,length(models)),-0.1*Massimo,labels=models,srt=45,adj=1,xpd=TRUE,cex=0.8)
   axis(2)
+  title(main=names(sexes[sex]))
   #
   # Legend
   #
   legend("topright",legend=c("BIC","KS_D","LOGP_KS"),col=c("black","blue","gray"),pch=c(20,17,15),
          lty=c(1,2,NA),lwd=2,bty="n")
-  dev.off()  
 }  
+dev.off()
 #
 # Write results (KS, BIC, AIC)
 # 
