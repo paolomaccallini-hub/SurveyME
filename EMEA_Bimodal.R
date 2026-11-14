@@ -369,6 +369,18 @@ for (comp in components) {
     dev.off()
   }
   #
+  # The age groups may be in the wrong order: sort each sex by mean and relabel
+  #
+  for (sex in c(1,2,3)) {
+    rows<-which(endsWith(myresults$group,paste0(" ",names(sexes)[sex])))
+    if (length(rows)==comp) {
+      df_1<-myresults[rows,]
+      df_1<-df_1[order(df_1$mean,decreasing=F),]
+      df_1$group<-paste(age,names(sexes)[sex])
+      myresults[rows,]<-df_1
+    }
+  }
+  #
   # Combine the per-family figures into one figure per number of components
   #
   # distributions: 2x2 grid (gamma, lnorm / norm, weibull)
