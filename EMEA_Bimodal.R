@@ -1,7 +1,7 @@
 # file: EMEA_Bimodal.R
 #
 #-------------------------------------------------------------------------------
-# Detection in bimodality of distributions of age at onset, stratified by sex
+# Search for the best continuous density for age at onset, stratified by sex
 #-------------------------------------------------------------------------------
 #
 set.seed(12) # seed
@@ -437,5 +437,7 @@ dev.off()
 # 
 for (sex in c(1,2,3)) {
   df<-subset.data.frame(criteria_results,group==names(sexes[sex]))
-  write.table(criteria_results,file="Plot/Bimodal_fit_criteria.csv",sep=",",col.names=T,row.names=F,quote=F) 
+  df<-df[order(df$BIC,decreasing=F),]
+  write.table(df,file=paste0("Plot/Bimodal_fit_criteria_",names(sexes[sex]),".csv"),
+              sep=",",col.names=T,row.names=F,quote=F) 
 }
