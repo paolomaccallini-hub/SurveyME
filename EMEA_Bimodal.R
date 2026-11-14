@@ -433,6 +433,9 @@ for (sex in c(1,2,3)) {
 }  
 dev.off()
 #
-# Write results (KS, BIC, AIC)
+# Write results (KS, BIC, AIC) with a file per group
 # 
-write.table(criteria_results,file="Plot/Bimodal_fit_criteria.csv",sep=",",col.names=T,row.names=F,quote=F)
+for (sex in c(1,2,3)) {
+  df<-subset.data.frame(criteria_results,group==names(sexes[sex]))
+  write.table(criteria_results,file="Plot/Bimodal_fit_criteria.csv",sep=",",col.names=T,row.names=F,quote=F) 
+}
