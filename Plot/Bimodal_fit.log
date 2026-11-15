@@ -128,3 +128,18 @@ norm | 3 comp | Both sexes | n=9555 | logLik=-37549.76 | BIC=75172.83
   comp 1: pi=0.1274  mu=15.09  sd=3.336
   comp 2: pi=0.7806  mu=33.49  sd=11.69
   comp 3: pi=0.09196  mu=42.32  sd=7.148
+
+weibull | 3 comp | Females | n=8166 | logLik=-32086.75 | BIC=64245.55
+  comp 1: pi=0.2055  k=3.326  lambda=17.79
+  comp 2: pi=0.5208  k=4.184  lambda=38.14
+  comp 3: pi=0.2737  k=3.701  lambda=43.29
+
+weibull | 3 comp | Males | n=1389 | logLik=-5498.7 | BIC=11055.29
+  comp 1: pi=0.07019  k=6.332  lambda=14.96
+  comp 2: pi=0.214  k=6.152  lambda=45.35
+  comp 3: pi=0.7159  k=2.563  lambda=33.82
+
+weibull | 3 comp | Both sexes | n=9555 | logLik=-37538.16 | BIC=75149.65
+  comp 1: pi=0.1223  k=5.297  lambda=16.14
+  comp 2: pi=0.8396  k=3.509  lambda=38.79
+  comp 3: pi=0.03815  k=1.304  lambda=23.56
