@@ -12,6 +12,7 @@ library(e1071) # for naiveBayes()
 library(pROC) # for ROC curve
 library(MASS) # for discriminant analysis
 library(magick) # it is used to build combined figures from figures already saved
+library(KSgeneral) # KS test for discrete null
 #
 #-------------------------------------------------------------------------------
 # Read, edit, save edited data

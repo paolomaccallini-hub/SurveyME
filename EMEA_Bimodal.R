@@ -25,11 +25,12 @@ summary(Dist_F)
 Dist_M<-mydata.M$age_ill
 summary(Dist_M)
 #
-Dist_F<-Dist_F+0.5 # avoid zeros and center the reported year
-Dist_M<-Dist_M+0.5 # avoid zeros and center the reported year
 Dist_MF<-c(Dist_F,Dist_M)
 summary(Dist_MF)
 #
+jittering<-F
+Dist_F<-Dist_F # avoid zeros and center the reported year
+Dist_M<-Dist_M # avoid zeros and center the reported year
 Dist_list<-list(Dist_F,Dist_M,Dist_MF)
 brks<-seq(0,ceiling(max(Dist_MF)),1)
 Bin_list<-lapply(Dist_list,function(x) bin(x,brks))
@@ -57,7 +58,18 @@ for (comp in components) {
     fit_list<-list()
     for (j in c(1,2,3)) {
       print(names(sexes)[j])
-      temp<-mixfit(Bin_list[[j]],family=fam,ncomp=comp,max_iter=max_iter,mstep.method="newton")
+      #
+      # repeat maximum estimation several times and chose the best fit
+      #
+      temp<-list()
+      loglike<-c()
+      for (s in 1:100) {
+        f<-mixfit(Bin_list[[j]],family=fam,ncomp=comp,max_iter=max_iter,mstep.method="newton")
+        temp[s]<-list(f) # keeps the slot even if NULL
+        loglike[s]<-if (is.null(f)) NA else f$loglik
+      }
+      index<-which.max(loglike)
+      temp<-temp[[index]]
       if (is.null(temp)) {
         fit_list[[j]]<-list() 
       } else {
@@ -289,7 +301,6 @@ for (comp in components) {
         }
         KS_D<-median(D_rep)
         KS_p<-median(p_rep)
-        pval<-format(KS_p,digits=3)
         #
         # Store quantiles for QQ plots
         #
@@ -308,8 +319,7 @@ for (comp in components) {
         # plots
         #
         hist(Dist_list[[sex]],breaks=seq(0,100,2),freq=F,xlim=c(5,90),ylim=c(0,0.04),xlab="age at onset",
-             ylab="density of probability",main=paste0(fam," - ",names(sexes[sex])," (KS pval=",pval,")"),
-             col=colv[sex])
+             ylab="density of probability",main=paste0(fam," - ",names(sexes[sex])),col=colv[sex])
         #
         for (gr in seq(1,comp)) {
           par(new=T)
@@ -445,11 +455,12 @@ for (sex in c(1,2,3)) {
 }  
 dev.off()
 #
-# Write results (KS, BIC, AIC) with a file per group
+# Write results (KS, BIC, AIC) with a file per group. Add delta BIC.
 # 
 for (sex in c(1,2,3)) {
   df<-subset.data.frame(criteria_results,group==names(sexes[sex]))
   df<-df[order(df$BIC,decreasing=F),]
+  df$Delta_BIC<-df$BIC-df$BIC[1]
   write.table(df,file=paste0("Plot/Bimodal_fit_criteria_",names(sexes[sex]),".csv"),
               sep=",",col.names=T,row.names=F,quote=F) 
 }
