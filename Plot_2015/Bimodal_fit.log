@@ -1,0 +1,147 @@
+Mixture fits of age at onset (parameters in years of age)
+Onset at birth excluded; onset year > 2015
+Best of 100 EM runs per model (binned likelihood, one-year bins)
+
+gamma | 1 comp | Females | n=1288 | logLik=-5194.12 | BIC=10402.56
+  comp 1: pi=1  alpha=6.475  lambda=0.1768
+
+gamma | 1 comp | Males | n=274 | logLik=-1120.74 | BIC=2252.7
+  comp 1: pi=1  alpha=4.474  lambda=0.1353
+
+gamma | 1 comp | Both sexes | n=1562 | logLik=-6330.56 | BIC=12675.83
+  comp 1: pi=1  alpha=5.951  lambda=0.1653
+
+lnorm | 1 comp | Females | n=1288 | logLik=-5269.31 | BIC=10552.94
+  comp 1: pi=1  mulog=3.521  sdlog=0.4272
+
+lnorm | 1 comp | Males | n=274 | logLik=-1132.03 | BIC=2275.28
+  comp 1: pi=1  mulog=3.383  sdlog=0.5111
+
+lnorm | 1 comp | Both sexes | n=1562 | logLik=-6420.07 | BIC=12854.86
+  comp 1: pi=1  mulog=3.497  sdlog=0.4462
+
+norm | 1 comp | Females | n=1288 | logLik=-5136.62 | BIC=10287.56
+  comp 1: pi=1  mu=36.62  sd=13.05
+
+norm | 1 comp | Males | n=274 | logLik=-1124.24 | BIC=2259.71
+  comp 1: pi=1  mu=33.07  sd=14.64
+
+norm | 1 comp | Both sexes | n=1562 | logLik=-6271.94 | BIC=12558.58
+  comp 1: pi=1  mu=35.99  sd=13.41
+
+weibull | 1 comp | Females | n=1288 | logLik=-5125.06 | BIC=10264.44
+  comp 1: pi=1  k=3.133  lambda=40.96
+
+weibull | 1 comp | Males | n=274 | logLik=-1115.9 | BIC=2243.02
+  comp 1: pi=1  k=2.433  lambda=37.36
+
+weibull | 1 comp | Both sexes | n=1562 | logLik=-6255.82 | BIC=12526.34
+  comp 1: pi=1  k=2.971  lambda=40.35
+
+gamma | 2 comp | Females | n=1288 | logLik=-5092.41 | BIC=10220.62
+  comp 1: pi=0.2427  alpha=9.028  lambda=0.4583
+  comp 2: pi=0.7573  alpha=19.42  lambda=0.4621
+
+gamma | 2 comp | Males | n=274 | logLik=-1109.32 | BIC=2246.7
+  comp 1: pi=0.2031  alpha=11.89  lambda=0.8383
+  comp 2: pi=0.7969  alpha=9.31  lambda=0.2458
+
+gamma | 2 comp | Both sexes | n=1562 | logLik=-6216.66 | BIC=12470.09
+  comp 1: pi=0.2647  alpha=8.227  lambda=0.421
+  comp 2: pi=0.7353  alpha=18.26  lambda=0.4357
+
+lnorm | 2 comp | Females | n=1288 | logLik=-5096.04 | BIC=10227.88
+  comp 1: pi=0.3323  mulog=3.081  sdlog=0.4129
+  comp 2: pi=0.6677  mulog=3.741  sdlog=0.2099
+
+lnorm | 2 comp | Males | n=274 | logLik=-1110.1 | BIC=2248.27
+  comp 1: pi=0.3922  mulog=2.911  sdlog=0.4333
+  comp 2: pi=0.6078  mulog=3.687  sdlog=0.2692
+
+lnorm | 2 comp | Both sexes | n=1562 | logLik=-6220.42 | BIC=12477.61
+  comp 1: pi=0.3657  mulog=3.077  sdlog=0.4326
+  comp 2: pi=0.6343  mulog=3.739  sdlog=0.2143
+
+norm | 2 comp | Females | n=1288 | logLik=-5089.46 | BIC=10214.72
+  comp 1: pi=0.1167  mu=15.5  sd=3.396
+  comp 2: pi=0.8833  mu=39.41  sd=11.16
+
+norm | 2 comp | Males | n=274 | logLik=-1112.15 | BIC=2252.36
+  comp 1: pi=0.134  mu=13.27  sd=2.94
+  comp 2: pi=0.866  mu=36.13  sd=13.27
+
+norm | 2 comp | Both sexes | n=1562 | logLik=-6215.66 | BIC=12468.09
+  comp 1: pi=0.1201  mu=15  sd=3.405
+  comp 2: pi=0.8799  mu=38.86  sd=11.59
+
+weibull | 2 comp | Females | n=1288 | logLik=-5090.64 | BIC=10217.08
+  comp 1: pi=0.09272  k=5.598  lambda=16.01
+  comp 2: pi=0.9073  k=3.739  lambda=43.01
+
+weibull | 2 comp | Males | n=274 | logLik=-1108.98 | BIC=2246.03
+  comp 1: pi=0.0795  k=8.202  lambda=12.52
+  comp 2: pi=0.9205  k=2.733  lambda=39.26
+
+weibull | 2 comp | Both sexes | n=1562 | logLik=-6216.21 | BIC=12469.18
+  comp 1: pi=0.09623  k=5.355  lambda=15.53
+  comp 2: pi=0.9038  k=3.541  lambda=42.53
+
+gamma | 3 comp | Females | n=1288 | logLik=-5088.79 | BIC=10234.88
+  comp 1: pi=0.1525  alpha=13.41  lambda=0.8207
+  comp 2: pi=0.5325  alpha=12.88  lambda=0.3509
+  comp 3: pi=0.315  alpha=35  lambda=0.7561
+
+gamma | 3 comp | Males | n=274 | logLik=-1106.64 | BIC=2258.19
+  comp 1: pi=0.2198  alpha=12.74  lambda=0.8958
+  comp 2: pi=0.2631  alpha=28.44  lambda=1.055
+  comp 3: pi=0.5171  alpha=19.69  lambda=0.4456
+
+gamma | 3 comp | Both sexes | n=1562 | logLik=-6209.36 | BIC=12477.54
+  comp 1: pi=0.1543  alpha=12.92  lambda=0.8274
+  comp 2: pi=0.6216  alpha=11.44  lambda=0.3082
+  comp 3: pi=0.2241  alpha=48.44  lambda=1.032
+
+lnorm | 3 comp | Females | n=1288 | logLik=-5089.7 | BIC=10236.69
+  comp 1: pi=0.2327  mulog=2.915  sdlog=0.3511
+  comp 2: pi=0.1971  mulog=3.441  sdlog=0.1694
+  comp 3: pi=0.5702  mulog=3.796  sdlog=0.1793
+
+lnorm | 3 comp | Males | n=274 | logLik=-1106.24 | BIC=2257.38
+  comp 1: pi=0.2708  mulog=2.711  sdlog=0.3392
+  comp 2: pi=0.25  mulog=3.325  sdlog=0.1658
+  comp 3: pi=0.4792  mulog=3.792  sdlog=0.205
+
+lnorm | 3 comp | Both sexes | n=1562 | logLik=-6210.76 | BIC=12480.36
+  comp 1: pi=0.2285  mulog=2.86  sdlog=0.3562
+  comp 2: pi=0.5293  mulog=3.61  sdlog=0.2594
+  comp 3: pi=0.2421  mulog=3.852  sdlog=0.1424
+
+norm | 3 comp | Females | n=1288 | logLik=-5086.8 | BIC=10230.89
+  comp 1: pi=0.09248  mu=14.45  sd=2.82
+  comp 2: pi=0.08462  mu=22.64  sd=5.297
+  comp 3: pi=0.8229  mu=40.55  sd=10.6
+
+norm | 3 comp | Males | n=274 | logLik=-1108.03 | BIC=2260.96
+  comp 1: pi=0.1378  mu=12.51  sd=2.688
+  comp 2: pi=0.234  mu=24.35  sd=6.064
+  comp 3: pi=0.6282  mu=40.83  sd=12.03
+
+norm | 3 comp | Both sexes | n=1562 | logLik=-6211.25 | BIC=12481.33
+  comp 1: pi=0.1048  mu=14.1  sd=2.965
+  comp 2: pi=0.09755  mu=23.33  sd=5.372
+  comp 3: pi=0.7977  mu=40.42  sd=10.89
+
+weibull | 3 comp | Females | n=1288 | logLik=-5088.92 | BIC=10235.12
+  comp 1: pi=0.09743  k=5.453  lambda=16.28
+  comp 2: pi=0.5241  k=4.419  lambda=43.04
+  comp 3: pi=0.3784  k=3.218  lambda=43.05
+
+weibull | 3 comp | Males | n=274 | logLik=-1103.8 | BIC=2252.5
+  comp 1: pi=0.124  k=5.018  lambda=13.96
+  comp 2: pi=0.8687  k=3.091  lambda=39.81
+  comp 3: pi=0.00725  k=160  lambda=82.09
+
+weibull | 3 comp | Both sexes | n=1562 | logLik=-6211.62 | BIC=12482.07
+  comp 1: pi=0.1102  k=5.035  lambda=15.93
+  comp 2: pi=0.7887  k=3.907  lambda=42.4
+  comp 3: pi=0.101  k=2.805  lambda=45.88

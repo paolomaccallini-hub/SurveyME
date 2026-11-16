@@ -174,7 +174,6 @@ EMEA.edit<-function() {
   # Remove unused columns
   #
   mydata<-subset.data.frame(mydata,select=-year_born)
-  mydata<-subset.data.frame(mydata,select=-year_ill)
   #
   # Add available custom cases
   #

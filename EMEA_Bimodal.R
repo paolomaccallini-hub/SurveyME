@@ -6,7 +6,7 @@
 #
 set.seed(12) # seed
 current_dir<-getwd()
-folder_path<-file.path(current_dir,"Plot")  
+folder_path<-file.path(current_dir,paste0("Plot_",myyear))
 if(!dir.exists(folder_path)) {
   dir.create(folder_path) 
 }
@@ -15,6 +15,14 @@ if(!dir.exists(folder_path)) {
 #
 mydata<-read.table(file="EMEA_edited.txt",sep="\t",header=T)
 mydata<-subset.data.frame(mydata,age_ill>0) # exclude reported onset at birth
+#
+# Filter by year_ill
+#
+myyear<-2015
+mydata<-subset.data.frame(mydata,year_ill>myyear) 
+#
+# Sex stratification
+#
 mydata.F<-subset.data.frame(mydata,gender_n==2)
 mydata.M<-subset.data.frame(mydata,gender_n==1)
 #
@@ -40,8 +48,11 @@ colv<-c("pink","cyan","gray")
 xvals<-seq(0,100,1)
 max_iter<-2000
 criteria_results<-data.frame() # goodness of fit tests
-log_file<-"Plot/Bimodal_fit.log" # start a log that will recor the parameters of the various models
-cat("Mixture fits of age at onset (parameters on the age+0.5 scale)\n",file=log_file)
+log_file<-paste0("Plot_",myyear,"/","Bimodal_fit.log") # start a log that will recor the parameters of the various models
+cat(paste0("Mixture fits of age at onset (parameters in years of age)\n",
+           "Onset at birth excluded; onset year > ",myyear,"\n",
+           "Best of 100 EM runs per model (binned likelihood, one-year bins)\n"),
+    file=log_file)
 par_names<-list(gamma=c("alpha","lambda"),lnorm=c("mulog","sdlog"),
                 norm=c("mu","sd"),weibull=c("k","lambda"))
 #
@@ -79,7 +90,7 @@ for (comp in components) {
     #
     # Plotting empirical distributions and models
     #
-    file.name<-paste0("Plot/Age_at_onset_",fam,"_",comp,".jpeg")
+    file.name<-paste0("Plot_",myyear,"/","Age_at_onset_",fam,"_",comp,".jpeg")
     jpeg(file.name,quality=100,res=300,width=2000,height=2000)
     lay.mat<-matrix(c(1,3,2,3),2,2)
     layout(mat=lay.mat)
@@ -353,12 +364,12 @@ for (comp in components) {
     #
     # Write component parameters (proportion, mean, SD)
     #
-    file.name<-paste0("Plot/Age_at_onset_",fam,"_",comp,"_components.tsv")
+    file.name<-paste0("Plot_",myyear,"/","Age_at_onset_",fam,"_",comp,"_components.tsv")
     write.table(myresults,file=file.name,sep="\t",col.names=T,row.names=F,quote=F)
     #
     # Plotting QQplots: empirical distributions against models
     #
-    file.name<-paste0("Plot/Age_at_onset_",fam,"_",comp,"_QQ.jpeg")
+    file.name<-paste0("Plot_",myyear,"/","Age_at_onset_",fam,"_",comp,"_QQ.jpeg")
     jpeg(file.name,quality=100,res=300,width=3000,height=1000)
     lay.mat<-matrix(c(1,2,3),1,3)
     layout(mat=lay.mat)
@@ -395,20 +406,20 @@ for (comp in components) {
   #
   # distributions: 2x2 grid (gamma, lnorm / norm, weibull)
   #
-  files<-paste0("Plot/Age_at_onset_",family,"_",comp,".jpeg")
+  files<-paste0("Plot_",myyear,"/","Age_at_onset_",family,"_",comp,".jpeg")
   imgs<-image_read(files)
   row1<-image_append(imgs[1:2])
   row2<-image_append(imgs[3:4])
   combined<-image_append(c(row1,row2),stack=TRUE)
-  image_write(combined,path=paste0("Plot/Age_at_onset_",comp,"_components.jpeg"),format="jpeg",quality=100)
+  image_write(combined,path=paste0("Plot_",myyear,"/","Age_at_onset_",comp,"_components.jpeg"),format="jpeg",quality=100)
   file.remove(files)
   #
   # QQ plots: stacked vertically, one row per family
   #
-  files<-paste0("Plot/Age_at_onset_",family,"_",comp,"_QQ.jpeg")
+  files<-paste0("Plot_",myyear,"/","Age_at_onset_",family,"_",comp,"_QQ.jpeg")
   imgs<-image_read(files)
   combined<-image_append(imgs,stack=TRUE)
-  image_write(combined,path=paste0("Plot/Age_at_onset_",comp,"_components_QQ.jpeg"),
+  image_write(combined,path=paste0("Plot_",myyear,"/","Age_at_onset_",comp,"_components_QQ.jpeg"),
               format="jpeg",quality=100)
   file.remove(files)
 }
@@ -419,7 +430,7 @@ criteria_results$LOGP_KS<-(-log10(criteria_results$KS_p))
 #
 # Plot BIC, KS_D and LOGP_10, one plot per dataset
 #
-file.name<-paste0("Plot/Goodness_of_fit.jpeg")
+file.name<-paste0("Plot_",myyear,"/","Goodness_of_fit.jpeg")
 jpeg(file.name,quality=100,res=300,width=6000,height=2000)
 par(mfrow=c(1,3))
 for (sex in c(1,2,3)) {
@@ -461,6 +472,6 @@ for (sex in c(1,2,3)) {
   df<-subset.data.frame(criteria_results,group==names(sexes[sex]))
   df<-df[order(df$BIC,decreasing=F),]
   df$Delta_BIC<-df$BIC-df$BIC[1]
-  write.table(df,file=paste0("Plot/Bimodal_fit_criteria_",names(sexes[sex]),".csv"),
+  write.table(df,file=paste0("Plot_",myyear,"/","Bimodal_fit_criteria_",names(sexes[sex]),".csv"),
               sep=",",col.names=T,row.names=F,quote=F) 
 }
